@@ -22,7 +22,6 @@ public:
     glm::vec3 getRightVector() const;
 
     void setCameraView(glm::vec3 eye, glm::vec3 lookat, glm::vec3 up);
-    bool isValidDeltaAngleY(const float deltaAngleY);
     void arcballRotate(const float deltaAngleX, const float deltaAngleY);
     void pan(const float deltaAngleX, const float deltaAngleY);
     void scale(const float delta);

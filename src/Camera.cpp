@@ -39,36 +39,19 @@ glm::vec3 MyApp::Camera::getRightVector() const
     return glm::transpose(mViewMatrix)[0];
 }
 
-bool MyApp::Camera::isValidDeltaAngleY(const float deltaAngleY)
-{
-    auto deltaAngleYRad = glm::radians(deltaAngleY);
-    glm::mat4 rotationMatrixY {glm::rotate(glm::identity<glm::mat4>(), -deltaAngleYRad, getRightVector())};
-    glm::vec3 rotatedEye {rotationMatrixY * glm::vec4(getViewDir(), 1)};
-    glm::vec3 currentEye {getViewDir()};
-    auto cos_v_c {glm::dot(currentEye, rotatedEye)};
-    auto cos_v_s {glm::dot(currentEye, glm::sign(deltaAngleY) * mUpVector)};
-    auto value {cos_v_c - cos_v_s};
-    return value > cosThreshold;
-}
-
 void MyApp::Camera::arcballRotate(const float deltaAngleX, const float deltaAngleY)
 {
     glm::vec4 eye(mEye, 1);
     glm::vec4 lookAt(mLookAt, 1);
 
-    auto angleXRad = glm::radians(deltaAngleX);
+    auto rotationMatrix {glm::rotate(glm::identity<glm::mat4>(), glm::radians(-deltaAngleX), mUpVector)};
+    auto newEye {rotationMatrix * (eye - lookAt) + lookAt};
 
-    if (isValidDeltaAngleY(deltaAngleY))
-    {
-        auto angleYRad = glm::radians(deltaAngleY);
-        glm::mat4 rotationMatrixY {glm::rotate(glm::identity<glm::mat4>(), -angleYRad, getRightVector())};
-        eye = (rotationMatrixY * (eye - lookAt)) + lookAt;
-    }
+    rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians(-deltaAngleY), getRightVector());
+    newEye = rotationMatrix * (newEye - lookAt) + lookAt;
+    auto newUpVector {rotationMatrix * glm::vec4(mUpVector, 1.0f)};
 
-    glm::mat4 rotationMatrixX {glm::rotate(glm::identity<glm::mat4>(), -angleXRad, mUpVector)};
-    eye = rotationMatrixX * (eye - lookAt) + lookAt;
-
-    setCameraView(eye, mLookAt, mUpVector);
+    setCameraView(newEye, mLookAt, newUpVector);
 }
 
 void MyApp::Camera::pan(const float deltaAngleX, const float deltaAngleY)
